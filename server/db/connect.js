@@ -1,14 +1,10 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
+const dbUrl = process.env.DATABASE_URL;
 
 exports.mongoDB = async () => {
   await mongoose
-    .connect(
-      "mongodb+srv://biswajitpanda552:2GQj83SlrnAVraGA@cluster0.le9p0fn.mongodb.net/sample_mflix",
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }
-    )
+    .connect(dbUrl)
     .then(() => {
       console.log("database connection established");
     })

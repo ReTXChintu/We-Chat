@@ -3,10 +3,13 @@ const app = express();
 const connect = require("./db/connect");
 const bodyParser = require("body-parser");
 const Users = require("./models/userSchema");
+const Chats = require("./models/chatSchema");
+const Messages = require("./models/messageSchema");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const cloudinaryAptSecret = process.env.CLOUDINARY_API_SECRET;
@@ -48,6 +51,7 @@ app.post("/addUser", upload.single("photo"), async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { email, pass } = req.body;
+  console.log("calling");
 
   try {
     const user = await Users.findOne({ email: email });
@@ -87,7 +91,59 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/sendMessage", (req, res) => {});
+app.post("/sendMessage", async (req, res) => {
+  const { sender, receiver, messageText } = req.body;
+  const senderUser = await Users.findById(sender);
+
+  console.log(senderUser);
+  try {
+    let chat = await Chats.findOne({
+      $or: [{ users: [sender, receiver] }, { users: [receiver, sender] }],
+    });
+
+    if (!chat) {
+      const newChat = new Chats({
+        users: [sender, receiver],
+        isGroup: false,
+      });
+
+      chat = await newChat.save();
+    }
+
+    const message = new Messages({
+      chat: chat._id,
+      content: messageText,
+      sender: sender,
+      receiver: receiver,
+      status: "sent",
+    });
+
+    const newMessage = await message.save();
+
+    chat.latestMessage = newMessage._id;
+
+    await chat.save();
+
+    res.status(200).json(newMessage);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.get("/getChats", async (req, res) => {
+  console.log(userId);
+  const userId = req.headers.authorization;
+  console.log(userId);
+  try {
+    const chats = await Chats.find({ users: { $in: [userId] } });
+
+    res.status(200).json(chats);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 app.post("/searchUser", (req, res) => {});
 
 app.listen(8000, () => {

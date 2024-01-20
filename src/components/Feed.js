@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Box,
   Center,
   Divider,
   HStack,
@@ -13,7 +12,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ChatUserList from "./ChatUserList";
 import { AttachmentIcon, ChevronDownIcon, SearchIcon } from "@chakra-ui/icons";
 import { FaVideo, FaPhoneAlt, FaEllipsisV } from "react-icons/fa";
@@ -22,6 +21,27 @@ import ReceiverMessageBubble from "./ReceiverMessageBubble";
 
 export default function Feed({ user }) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
+  const [chats, setChats] = useState([]);
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      console.log("called")
+      const response = await fetch("/getChats", {
+        method: "GET",
+        // headers: {
+        //   "authorization": user._id,
+        // },
+      });
+
+      if (!response.ok) console.log(response);
+
+      const result = await response.json();
+
+      setChats(result.chats);
+    };
+
+    fetchChats();
+  }, []);
 
   return (
     <Center
@@ -29,12 +49,12 @@ export default function Feed({ user }) {
       ml={{ base: "0", md: "10vw" }}
     >
       <VStack w="100%" overflow="hidden">
-        <HStack w="100%" pt={4}>
+        <HStack w="100%" pt={4} justifyContent={"space-between"}>
           <VStack
             w="30%"
             maxH="calc(100vh - 64px)"
-            overflowY="auto"
-            overflowX={"hidden"}
+            overflowY="hidden"
+            overflowX="hidden"
           >
             <HStack
               w={"100%"}
@@ -61,20 +81,25 @@ export default function Feed({ user }) {
               </IconButton>
             </HStack>
 
-            <VStack w={"100%"} divider={<StackDivider />}>
-              {[...Array(20).keys()].map((index) => (
-                <ChatUserList key={index} />
+            <VStack
+              w={"100%"}
+              divider={<StackDivider />}
+              overflowY={"auto"}
+              overflowX={"hidden"}
+              alignItems={"flex-start"}
+            >
+              {chats.map((chat) => (
+                <ChatUserList key={chat._id} chat={chat} />
               ))}
             </VStack>
           </VStack>
 
-          <Box w="5%"></Box>
           <VStack
             w="65%"
             alignItems="flex-start"
             justifyContent={"flex-start"}
             maxH="calc(100vh - 64px)"
-            overflowY="auto"
+            overflowY="hidden"
             position={"relative"}
           >
             <VStack
@@ -110,13 +135,15 @@ export default function Feed({ user }) {
               </HStack>
               <Divider />
             </VStack>
-            {[...Array(50).keys()].map((index) =>
-              index % 2 === 0 ? (
-                <SenderMessageBubble />
-              ) : (
-                <ReceiverMessageBubble />
-              )
-            )}
+            <VStack w={"100%"} overflowY="auto">
+              {[...Array(50).keys()].map((index) =>
+                index % 2 === 0 ? (
+                  <SenderMessageBubble key={index} />
+                ) : (
+                  <ReceiverMessageBubble key={index} />
+                )
+              )}
+            </VStack>
             <HStack
               w={"100%"}
               position={"absolute"}

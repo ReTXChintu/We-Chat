@@ -8,7 +8,6 @@ function App() {
     JSON.parse(localStorage.getItem("weChatAppUser"))
   );
   const toggleUser = (newUser) => {
-    console.log("helllo");
     setUser(newUser);
   };
 
@@ -24,7 +23,6 @@ function App() {
       ) : (
         <Login toggleUser={toggleUser} />
       )}
-      {/* <ScrollablePage /> */}
     </ChakraProvider>
   );
 }

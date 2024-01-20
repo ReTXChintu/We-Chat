@@ -9,11 +9,10 @@ var userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    photo: 
-      {
-        type: String,
-        // required: true,
-      },
+    photo: {
+      type: String,
+      // required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -25,7 +24,7 @@ var userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-    //   required: true,
+      //   required: true,
       unique: true,
     },
     isOnline: {
