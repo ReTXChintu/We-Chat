@@ -8,7 +8,40 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
-export default function ChatUserList() {
+export default function ChatUserList({chat, chatUser}) {
+  const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
+
+  const formatText = (time) => {
+    const currentDate = new Date();
+    const inputDate = new Date(time);
+  
+    const isSameDay = (
+      inputDate.getDate() === currentDate.getDate() &&
+      inputDate.getMonth() === currentDate.getMonth() &&
+      inputDate.getFullYear() === currentDate.getFullYear()
+    );
+  
+    const isYesterday = (
+      inputDate.getDate() === currentDate.getDate() - 1 &&
+      inputDate.getMonth() === currentDate.getMonth() &&
+      inputDate.getFullYear() === currentDate.getFullYear()
+    );
+  
+    if (isSameDay) {
+      // Return the time if it's today
+      return `${inputDate.getHours()}:${inputDate.getMinutes()}`;
+    } else if (isYesterday) {
+      // Return "Yesterday" if it's yesterday
+      return "Yesterday";
+    } else {
+      // Return the date in the format dd-mm-yyyy
+      const dd = String(inputDate.getDate()).padStart(2, '0');
+      const mm = String(inputDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = inputDate.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  };
+  
   return (
     <Card
       direction={"row"}
@@ -19,11 +52,11 @@ export default function ChatUserList() {
     >
       <HStack>
         <Avatar
-          src="https://images.unsplash.com/photo-1667489022797-ab608913feeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw5fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60"
+          src={`${cloudinaryUrl}/${chatUser.photo}.jpg`}
           alt="Caffe Latte"
         />
         <CardBody>
-          <Heading size="sm">The perfect latte</Heading>
+          <Heading size="sm">{chatUser.name}</Heading>
          
             <Text
               fontSize={"sm"}
@@ -32,12 +65,11 @@ export default function ChatUserList() {
               overflow="hidden"
               textOverflow="ellipsis"
             >
-              Caffè latte is a coffee beverage of Italian origin made with
-              espresso and steamed milk.
+              {chat.latestMessage}
             </Text>
         
           <Text fontSize={"xs"} position={"absolute"} bottom={0} right={3}>
-            time
+            {formatText(chat.updatedAt)}
           </Text>
         </CardBody>
       </HStack>

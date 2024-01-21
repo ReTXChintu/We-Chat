@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const http = require("http");
 const connect = require("./db/connect");
 const bodyParser = require("body-parser");
 const Users = require("./models/userSchema");
@@ -14,7 +15,18 @@ const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const cloudinaryAptSecret = process.env.CLOUDINARY_API_SECRET;
 
+const { Server } = require("socket.io");
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.SOCKET_URL || "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+
 connect.mongoDB();
+
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors());
@@ -23,10 +35,16 @@ cloudinary.config({
   api_key: cloudinaryApiKey,
   api_secret: cloudinaryAptSecret,
 });
-
 // Configure Multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+const socket = io.of("/");
+socket.on("connection", (socket) => {
+  socket.on('userConnected', (userId) => {
+    console.log("User connected with id: ", socket.id);
+  })
+});
 
 app.post("/addUser", upload.single("photo"), async (req, res) => {
   try {
@@ -95,7 +113,6 @@ app.post("/sendMessage", async (req, res) => {
   const { sender, receiver, messageText } = req.body;
   const senderUser = await Users.findById(sender);
 
-  console.log(senderUser);
   try {
     let chat = await Chats.findOne({
       $or: [{ users: [sender, receiver] }, { users: [receiver, sender] }],
@@ -131,13 +148,24 @@ app.post("/sendMessage", async (req, res) => {
 });
 
 app.get("/getChats", async (req, res) => {
-  console.log(userId);
   const userId = req.headers.authorization;
-  console.log(userId);
   try {
     const chats = await Chats.find({ users: { $in: [userId] } });
 
-    res.status(200).json(chats);
+    const user = await Users.findById(userId);
+
+    // Use map to create an array of promises
+    const chatUsersPromises = chats.map(async (chat) => {
+     
+      const otherUserId =
+        chat.users[0] === user._id ? chat.users[1] : chat.users[0];
+      return await Users.findById(otherUserId);
+    });
+
+    // Wait for all promises to resolve
+    const chatUsers = await Promise.all(chatUsersPromises);
+
+    res.status(200).json({ chats: chats, chatUsers: chatUsers });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
