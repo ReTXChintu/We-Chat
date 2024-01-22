@@ -15,10 +15,12 @@ const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const cloudinaryAptSecret = process.env.CLOUDINARY_API_SECRET;
 
-const { Server } = require("socket.io");
-const server = http.createServer(app);
+const server = app.listen(8000, () => {
+  console.log("Server connected to port 8000");
+});
 
-const io = new Server(server, {
+const socket = require("socket.io")(server, {
+  pingTimeout: 60000,
   cors: {
     origin: process.env.SOCKET_URL || "http://localhost:3000",
     methods: ["GET", "POST"],
@@ -39,11 +41,40 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const socket = io.of("/");
 socket.on("connection", (socket) => {
-  socket.on('userConnected', (userId) => {
-    console.log("User connected with id: ", socket.id);
-  })
+  socket.on("userConnected", async (userId) => {
+    const chats = await Chats.find({ users: { $in: [userId] } });
+
+    socket.emit("gotChats", chats);
+  });
+
+  socket.on("sendMessage", async ({sender, chatId, message}) => {
+    console.log(chatId);
+    const chat = await Chats.findById(chatId);
+
+    console.log(chat);
+
+    const newMessage = new Messages({
+      chat: chat,
+      sender: sender,
+      content: message,
+      status: "sent",
+    });
+
+    const savedMessage = await newMessage.save();
+
+    chat.latestMessage = savedMessage;
+
+    const savedChat = await chat.save();
+
+    const newSavedMessage = await Messages.findByIdAndUpdate(
+      savedMessage._id,
+      { $set: { chat: savedChat } },
+      { new: true }
+    );
+
+    socket.emit("newMessage", newSavedMessage);
+  });
 });
 
 app.post("/addUser", upload.single("photo"), async (req, res) => {
@@ -147,33 +178,4 @@ app.post("/sendMessage", async (req, res) => {
   }
 });
 
-app.get("/getChats", async (req, res) => {
-  const userId = req.headers.authorization;
-  try {
-    const chats = await Chats.find({ users: { $in: [userId] } });
-
-    const user = await Users.findById(userId);
-
-    // Use map to create an array of promises
-    const chatUsersPromises = chats.map(async (chat) => {
-     
-      const otherUserId =
-        chat.users[0] === user._id ? chat.users[1] : chat.users[0];
-      return await Users.findById(otherUserId);
-    });
-
-    // Wait for all promises to resolve
-    const chatUsers = await Promise.all(chatUsersPromises);
-
-    res.status(200).json({ chats: chats, chatUsers: chatUsers });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
 app.post("/searchUser", (req, res) => {});
-
-app.listen(8000, () => {
-  console.log("Server connected to port 8000");
-});

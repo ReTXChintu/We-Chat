@@ -18,54 +18,29 @@ import { AttachmentIcon, ChevronDownIcon, SearchIcon } from "@chakra-ui/icons";
 import { FaVideo, FaPhoneAlt, FaEllipsisV } from "react-icons/fa";
 import SenderMessageBubble from "./SenderMessageBubble";
 import ReceiverMessageBubble from "./ReceiverMessageBubble";
-import io from 'socket.io-client';
 
-export default function Feed({ user }) {
+export default function Feed({ user, socket }) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
-  const [chats, setChats] = useState([]);
-  const [chatUsers, setChatUsers] = useState([]);
-  const serverUrl = process.env.REACT_APP_SERVER_URL;
-  const socket = io.connect();
-  
-  useEffect(() => {
-    fetch(`${serverUrl}/getChats`, {
-      method: "GET",
-      headers: {
-        Authorization: user._id,
-        "Content-Type": "application/json", // Adjust the content type if needed
-      },
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setChats(data.chats);
-      setChatUsers(data.chatUsers);
-      // Process the data as needed
-    })
-    .catch((error) => {
-      console.error("Error fetching chats:", error);
-    });
-  }, [serverUrl, user]);
-  
-  useEffect(() => {
-    socket.emit('userConnected', user._id);
-    // const socket = socketIOClient(serverUrl); // Replace with your server URL
+  const [chats, setChats] = useState([]); 
+  // const serverUrl = process.env.REACT_APP_SERVER_URL;
 
-    // Handle incoming messages
-    socket.on('connection', (data) => {
-      console.log('Message received:', data);
-      // Update your UI with the received message
+  useEffect(() => {
+    socket.emit("sendMessage", ({
+      sender: user._id,
+      chatId: "65abfe6da5cb79c927bf4df0",
+      message: "Hello world",
+    }));
+  }, []);
+
+  useEffect(() => {
+    socket.on("gotChats", (chats) => {
+      setChats((prevChats) => chats);
     });
 
-    return () => {
-      // Clean up on component unmount
-      socket.disconnect();
-    };
-  }, [socket, user]);
+    socket.on("newMessage", (newMessage) => {
+      console.log(newMessage);
+    });
+  });
 
   return (
     <Center
@@ -114,11 +89,7 @@ export default function Feed({ user }) {
               justifyContent={"flex-start"}
             >
               {chats.map((chat, index) => (
-                <ChatUserList
-                  key={chat._id}
-                  chat={chat}
-                  chatUser={chatUsers[index]}
-                />
+                <ChatUserList key={chat._id} chat={chat} />
               ))}
             </VStack>
           </VStack>

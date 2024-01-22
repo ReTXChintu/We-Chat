@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   Heading,
@@ -8,7 +8,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
-export default function ChatUserList({chat, chatUser}) {
+export default function ChatUserList({chat}) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
 
   const formatText = (time) => {
@@ -41,6 +41,10 @@ export default function ChatUserList({chat, chatUser}) {
       return `${dd}/${mm}/${yyyy}`;
     }
   };
+
+  useEffect(() => {
+    console.log(chat)
+  },[chat])
   
   return (
     <Card
@@ -52,11 +56,11 @@ export default function ChatUserList({chat, chatUser}) {
     >
       <HStack>
         <Avatar
-          src={`${cloudinaryUrl}/${chatUser.photo}.jpg`}
+          src={`${cloudinaryUrl}/${chat.users[1].photo}.jpg`}
           alt="Caffe Latte"
         />
         <CardBody>
-          <Heading size="sm">{chatUser.name}</Heading>
+          <Heading size="sm">{chat.users[0]}</Heading>
          
             <Text
               fontSize={"sm"}

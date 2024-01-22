@@ -4,12 +4,12 @@ var chatSchema = new mongoose.Schema(
   {
     users: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         ref: "user",
       },
     ],
     latestMessage: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: "message",
     },
     isGroup: {
