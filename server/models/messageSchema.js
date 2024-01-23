@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 var messaggeSchema = new mongoose.Schema(
   {
     chat: {
-      type: Object,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "chat",
       required: true,
     },

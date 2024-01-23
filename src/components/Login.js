@@ -34,7 +34,6 @@ export default function Login({ toggleUser }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [pass, setPass] = useState("");
-  const [photo, setPhoto] = useState(null);
   const [signUpDisable, setSignUpDisable] = useState(true);
   const [loginDisable, setLoginDisable] = useState(true);
   const serverUrl = process.env.REACT_APP_SERVER_URL;
@@ -43,7 +42,6 @@ export default function Login({ toggleUser }) {
     const file = e.target.files[0];
 
     if (file) {
-      setPhoto(file);
       // Assuming you are using FileReader to read the image as a data URL
       const reader = new FileReader();
 
@@ -56,9 +54,9 @@ export default function Login({ toggleUser }) {
   };
 
   useEffect(() => {
-    if (!name || !email || !pass || !phone || !photo) setSignUpDisable(true);
+    if (!name || !email || !pass || !phone) setSignUpDisable(true);
     else setSignUpDisable(false);
-  }, [name, email, phone, pass, photo]);
+  }, [name, email, phone, pass]);
 
   useEffect(() => {
     if (!loginemail || !loginPass) setLoginDisable(true);

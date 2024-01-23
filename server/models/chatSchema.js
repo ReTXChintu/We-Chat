@@ -4,17 +4,28 @@ var chatSchema = new mongoose.Schema(
   {
     users: [
       {
-        type: Object,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
     ],
     latestMessage: {
-      type: Object,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "message",
     },
     isGroup: {
       type: Boolean,
       default: false,
+    },
+    groupAdmin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    groupName: {
+      type: String,
+    },
+    groupIcon: {
+      type: String,
+      default: "zyypxtz4hw43gi8hcf9o.jpg",
     },
   },
   {

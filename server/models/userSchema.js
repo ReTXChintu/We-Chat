@@ -12,6 +12,7 @@ var userSchema = new mongoose.Schema(
     photo: {
       type: String,
       // required: true,
+      default: "jrgyl64notdzsepegn28.png",
     },
     name: {
       type: String,
@@ -33,9 +34,6 @@ var userSchema = new mongoose.Schema(
     lastSeen: {
       type: Date,
     },
-    rCode: {
-      type: String,
-    },
     blocklist: [
       {
         type: String,
@@ -46,18 +44,6 @@ var userSchema = new mongoose.Schema(
         type: String,
       },
     ],
-    // otp: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // expiry: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // verified: {
-    //   type: Boolean,
-    //   required: true,
-    // },
   },
   {
     timestamps: true,
