@@ -25,3 +25,4 @@ export const formatText = (time) => {
     .toString()
     .padStart(2, "0")}`;
 };
+

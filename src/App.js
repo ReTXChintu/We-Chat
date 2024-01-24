@@ -1,6 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import Feed from "./components/Feed";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import io from "socket.io-client";
 
@@ -14,13 +14,9 @@ function App() {
     setUser(newUser);
   };
 
-  //   useEffect(() => {
-  //     socket.emit('userConnected', user._id);
-  //   socket.on('connection', (data) => {
-  //     console.log('Message received:', data);
-  //     // Update your UI with the received message
-  //   });
-  // }, [user, socket]);
+  useEffect(() => {
+    if (user) socket.emit("userConnected", user._id);
+  }, [user, socket]);
 
   return (
     <ChakraProvider>

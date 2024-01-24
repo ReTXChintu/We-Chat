@@ -10,11 +10,10 @@ import {
   InputRightElement,
   Spacer,
   Spinner,
-  StackDivider,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatUserList from "./ChatUserList";
 import {
   AttachmentIcon,
@@ -28,6 +27,7 @@ import {
   FaEllipsisV,
   FaPaperPlane,
   FaMicrophone,
+  FaArrowDown,
 } from "react-icons/fa";
 import SenderMessageBubble from "./SenderMessageBubble";
 import ReceiverMessageBubble from "./ReceiverMessageBubble";
@@ -35,7 +35,7 @@ import SearchResultList from "./SearchResultList";
 import CreateGroupChatButton from "./CreateGroupChatButton";
 import { searchUser } from "./commonFunctions";
 
-export default function Feed({ user }) {
+export default function Feed({ user, socket }) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
@@ -46,6 +46,137 @@ export default function Feed({ user }) {
   const [isLoading, setIsLoading] = useState(false);
   const serverUrl = process.env.REACT_APP_SERVER_URL;
   const [bottomValue, setBottomValue] = useState("");
+  const [connectedUsers, setConnectedUsers] = useState([]);
+  const [notifications, setNotifications] = useState({});
+  const messagesContainerRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (container) {
+      const handleScroll = () => {
+        // Check if the user is not at the bottom of the messages
+        const atBottom =
+          container.scrollTop + container.clientHeight ===
+          container.scrollHeight;
+
+        setShowScrollButton(!atBottom);
+      };
+
+      container.addEventListener("scroll", handleScroll);
+
+      // Cleanup event listener on component unmount
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [messagesContainerRef]);
+
+  useEffect(() => {
+    // Scroll to the last message when the component mounts or when activeChat changes
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, activeChat, cloudinaryUrl, user]);
+
+  const handleScrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  const handleUsers = (newMessage) => {
+    const chatIndex = chats.findIndex(
+      (chat) => chat._id === newMessage.chat.toString()
+    );
+
+    // If the chat is found in the array
+    if (chatIndex !== -1) {
+      // Move the chat to the beginning of the array (index 0)
+      const updatedChats = [
+        chats[chatIndex],
+        ...chats.slice(0, chatIndex),
+        ...chats.slice(chatIndex + 1),
+      ];
+
+      // Update the latestMessage in the found chat
+      updatedChats[0].latestMessage = newMessage;
+
+      // Set the updated chats array
+      setChats(updatedChats);
+    }
+  };
+
+  const handleNotification = (newMessage) => {
+    const chatId = newMessage.chat.toString();
+    const chatIndex = chats.findIndex((chat) => chat._id === chatId);
+
+    if (chatIndex !== -1) {
+      setNotifications((prevNotifications) => ({
+        ...prevNotifications,
+        [chatId]: (prevNotifications[chatId] || 0) + 1,
+      }));
+    }
+  };
+
+  const sendMessage = async () => {
+    try {
+      const response = await fetch(`${serverUrl}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: user._id,
+          chatId: activeChat._id,
+          messageText: typedMessage,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Message Sending Failed", response);
+
+      const result = await response.json();
+      setTypedMessage("");
+      socket.emit("newMessage", result);
+      handleUsers(result);
+      if (activeChat && activeChat._id.toString() === result.chat.toString())
+        setMessages((prevMessages) => [...prevMessages, result]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const handleNewMessageReceived = (newMessage) => {
+      if (activeChat && activeChat._id.toString() === newMessage.chat) {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      } else handleNotification(newMessage);
+
+      handleUsers(newMessage);
+      socket.emit("getReceivedMessages", user._id);
+    };
+
+    socket.on("newMessageReceived", handleNewMessageReceived);
+
+    return () => {
+      socket.off("newMessageReceived", handleNewMessageReceived);
+    };
+  });
+
+  useEffect(() => {
+    const handleConnectedUsers = (data) => {
+      setConnectedUsers(data);
+    };
+
+    socket.on("connectedUsers", handleConnectedUsers);
+
+    return () => {
+      socket.off("connectedUsers", handleConnectedUsers);
+    };
+  });
 
   useEffect(() => {
     const element = document.getElementById("searchBar");
@@ -110,30 +241,6 @@ export default function Feed({ user }) {
     fetchData();
   }, [query]);
 
-  const sendMessage = async () => {
-    try {
-      const response = await fetch(`${serverUrl}/sendMessage`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          sender: user._id,
-          chatId: activeChat._id,
-          messageText: typedMessage,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Message Sending Failed", response);
-
-      const result = await response.json();
-      console.log(result);
-      setTypedMessage("");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const openChat = async (chatUserId) => {
     const response = await fetch(`${serverUrl}/createChat`, {
       method: "POST",
@@ -181,8 +288,8 @@ export default function Feed({ user }) {
 
   return (
     <Center
-      width={{ base: "100vw", md: "80vw" }}
-      ml={{ base: "0", md: "10vw" }}
+      width={{ base: "100vw", xl: "80vw" }}
+      ml={{ base: "0", xl: "10vw" }}
     >
       <VStack w="100%" overflow="hidden">
         <HStack w="100%" pt={4} justifyContent={"space-between"}>
@@ -263,19 +370,28 @@ export default function Feed({ user }) {
 
             <VStack
               w={"100%"}
-              divider={<StackDivider />}
               overflowY={"auto"}
               overflowX={"hidden"}
               alignItems={"flex-start"}
               justifyContent={"flex-start"}
+              pb={4}
             >
               {chats.map((chat) => (
                 <Box
                   key={chat._id}
-                  onClick={() => setActiveChat(chat)}
+                  onClick={() => {
+                    setActiveChat(chat);
+                    socket.emit("joinRoom", chat._id);
+                  }}
                   w={"100%"}
                 >
-                  <ChatUserList chat={chat} />
+                  <ChatUserList
+                    chat={chat}
+                    user={user}
+                    connectedUsers={connectedUsers}
+                    notification={notifications[chat._id]}
+                    isActive={activeChat && activeChat._id === chat._id}
+                  />
                 </Box>
               ))}
             </VStack>
@@ -288,8 +404,7 @@ export default function Feed({ user }) {
           {activeChat ? (
             <VStack
               w="65%"
-              alignItems="flex-start"
-              justifyContent={"flex-start"}
+              justifyContent={"space-between"}
               maxH="calc(100vh - 64px)"
               minH="calc(100vh - 64px)"
               overflowY="hidden"
@@ -311,24 +426,24 @@ export default function Feed({ user }) {
                       src={
                         activeChat.isGroup
                           ? `${cloudinaryUrl}${activeChat.groupIcon}`
-                          : `${cloudinaryUrl}${activeChat.chatUser.photo}`
+                          : `${cloudinaryUrl}${activeChat.chatUsers[0].photo}`
                       }
                       name={
                         activeChat.isGroup
                           ? activeChat.groupName
-                          : activeChat.chatUser.name
+                          : activeChat.chatUsers[0].name
                       }
                     />
                     <VStack alignItems={"flex-start"}>
                       <Text fontSize="md">
                         {activeChat.isGroup
                           ? activeChat.groupName
-                          : activeChat.chatUser.name}
+                          : activeChat.chatUsers[0].name}
                       </Text>
                       <Text fontSize="sm">
                         {activeChat.isGroup
                           ? `${activeChat.users.length} members`
-                          : activeChat.chatUser.isOnline
+                          : connectedUsers.includes(activeChat.chatUsers[0]._id)
                           ? "Online"
                           : "Offline"}
                       </Text>
@@ -348,7 +463,13 @@ export default function Feed({ user }) {
                   </HStack>
                 </HStack>
               </VStack>
-              <VStack w={"100%"} overflowY="auto">
+
+              <VStack
+                w={"100%"}
+                overflowY="auto"
+                pb={5}
+                ref={messagesContainerRef}
+              >
                 {messages.map((message) =>
                   message.sender === user._id ? (
                     <SenderMessageBubble
@@ -384,13 +505,26 @@ export default function Feed({ user }) {
                     />
                   )
                 )}
+                {showScrollButton && (
+                  <IconButton
+                    icon={<FaArrowDown />}
+                    onClick={handleScrollToBottom}
+                    position="absolute"
+                    bottom="10vh"
+                    right="20px"
+                    borderRadius="full"
+                  />
+                )}
               </VStack>
+              <Spacer />
+
               <HStack
                 w={"100%"}
-                position={"absolute"}
-                bottom={0}
+                // position={"absolute"}
+                // bottom={0}
                 backgroundColor={"white"}
                 pt={4}
+                id="bottomBar"
               >
                 <IconButton borderRadius={"full"} backgroundColor={"white"}>
                   <AttachmentIcon />

@@ -13,7 +13,7 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
-const cloudinaryAptSecret = process.env.CLOUDINARY_API_SECRET;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 
 const server = app.listen(8000, () => {
   console.log("Server connected to port 8000");
@@ -35,13 +35,52 @@ app.use(cors());
 cloudinary.config({
   cloud_name: cloudName,
   api_key: cloudinaryApiKey,
-  api_secret: cloudinaryAptSecret,
+  api_secret: cloudinaryApiSecret,
 });
 // Configure Multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-socket.on("connection", (socket) => {});
+const connectedUsers = []; // Assuming this is defined somewhere in your code
+
+socket.on("connection", (socket) => {
+  console.log("User connected");
+
+  socket.on("userConnected", async (userId) => {
+    socket.join(userId);
+    if (!connectedUsers.includes(userId)) connectedUsers.push(userId);
+
+    socket.broadcast.emit("connectedUsers", connectedUsers);
+
+    socket.emit("connectedUsers", connectedUsers);
+  });
+
+  socket.on("joinRoom", (room) => {
+    socket.join(room);
+  });
+
+  socket.on("newMessage", async (newMessage) => {
+    // Your existing logic for new messages
+    const chat = await Chats.findById(newMessage.chat);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+
+    // Remove the disconnected user from the connectedUsers array
+    const disconnectedUserId = getUserIdFromSocket(socket);
+    const index = connectedUsers.indexOf(disconnectedUserId);
+
+    if (index !== -1) {
+      connectedUsers.splice(index, 1);
+      socket.broadcast.emit("connectedUsers", connectedUsers);
+    }
+  });
+});
+
+const getUserIdFromSocket = (socket) => {
+  return socket.data.userId;
+};
 
 app.post("/addUser", upload.single("photo"), async (req, res) => {
   try {
@@ -224,20 +263,21 @@ app.get("/chats", async (req, res) => {
 
     const updatedChats = await Promise.all(
       chats.map(async (chat) => {
-        const chatUser =
-          chat.users[0].toString() === userId
-            ? await Users.findById(chat.users[1]).select(
-                "-password -blocklist -reports"
-              )
-            : await Users.findById(chat.users[0]).select(
-                "-password -blocklist -reports"
-              );
+        let chatUsers = [];
+        chat.users.forEach(async (user) => {
+          if (user.toString() === userId) return;
+          const chatUser = await Users.findById(user).select(
+            "-password -blocklist -reports"
+          );
+
+          chatUsers.push(chatUser);
+        });
         const latestMessage = await Messages.findById(chat.latestMessage);
 
         // Create a new object with the additional chatUser property
         return {
           ...chat.toObject(), // Convert Mongoose document to plain object
-          chatUser,
+          chatUsers,
           latestMessage,
         };
       })

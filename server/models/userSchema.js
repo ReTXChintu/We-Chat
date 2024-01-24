@@ -28,12 +28,6 @@ var userSchema = new mongoose.Schema(
       //   required: true,
       unique: true,
     },
-    isOnline: {
-      type: Boolean,
-    },
-    lastSeen: {
-      type: Date,
-    },
     blocklist: [
       {
         type: String,

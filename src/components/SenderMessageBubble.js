@@ -1,15 +1,13 @@
-import { CheckIcon } from "@chakra-ui/icons";
-import { Flex, Icon, Text } from "@chakra-ui/react";
+import { Flex, HStack, Text } from "@chakra-ui/react";
 import React from "react";
 import { formatText } from "./commonFunctions";
 
 export default function SenderMessageBubble({ message }) {
-
   return (
     <Flex w="100%" justify="flex-end">
       <Flex
-        bg="black"
-        color="white"
+        bg="blue.100"
+        color="black"
         borderRadius={"20px"}
         minW="150px"
         maxW="350px"
@@ -19,12 +17,9 @@ export default function SenderMessageBubble({ message }) {
       >
         <Text mb={3}>{message.content}</Text>
 
-        <Text fontSize={"sm"} position={"absolute"} bottom={0} right={2}>
-          <Icon>
-            <CheckIcon />
-          </Icon>
-          {formatText(message.createdAt)}
-        </Text>
+        <HStack position={"absolute"} bottom={0} right={2}>
+          <Text fontSize={"sm"}>{formatText(message.createdAt)}</Text>
+        </HStack>
       </Flex>
     </Flex>
   );
