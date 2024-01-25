@@ -1,3 +1,8 @@
+import React from "react";
+import Lottie from "lottie-react";
+import { Avatar, HStack } from "@chakra-ui/react";
+import animationData from "../animations/typingAnimation.json";
+
 export async function searchUser(query) {
   const serverUrl = process.env.REACT_APP_SERVER_URL;
   try {
@@ -26,3 +31,11 @@ export const formatText = (time) => {
     .padStart(2, "0")}`;
 };
 
+export function TypingAnimation({ imageUrl, name }) {
+  return (
+    <HStack w={"100px"}>
+      <Avatar src={imageUrl} name={name} size={"md"} />
+      <Lottie animationData={animationData} height={"20px"} />
+    </HStack>
+  );
+}

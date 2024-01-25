@@ -22,7 +22,7 @@ import {
 import { AddIcon, SmallAddIcon, SmallCloseIcon } from "@chakra-ui/icons";
 import { searchUser } from "./commonFunctions";
 
-export default function CreateGroupChatButton({ user, createGroupChat }) {
+export default function CreateGroupChatButton({ user, serverUrl, setChats, setActiveChat, chats }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [query, setQuery] = useState("");
   const [groupName, setGroupName] = useState("New We Chat Group");
@@ -30,6 +30,30 @@ export default function CreateGroupChatButton({ user, createGroupChat }) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [isDisabled, setIsDisabled] = useState(true);
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
+
+  const createGroupChat = async (groupName, selectedUsers, groupAdmin) => {
+    let groupUsers = [];
+    selectedUsers.forEach((element) => groupUsers.push(element._id));
+
+    const response = await fetch(`${serverUrl}/createGroupChat`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        groupName: groupName,
+        users: groupUsers,
+        groupAdmin: groupAdmin,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Error creaing group: ", response);
+
+    const result = await response.json();
+
+    setChats((prevChats) => [result, ...prevChats]);
+    setActiveChat(chats[0]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {

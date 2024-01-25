@@ -10,6 +10,7 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const path = require("path");
 require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
@@ -41,11 +42,27 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// -------------------------Deployment----------------------------
+
+const __dirname1 = path.resolve();
+if(process.env.NODE_ENV==='production'){
+
+  app.use(express.static(path.join(__dirname1, '/build')))
+
+  app.get('*', (req,res) => {
+    res.sendFile(path.resolve(__dirname1, "build","index.html"))
+  });
+}else{
+  app.get("/", (req,res) => {
+    res.send("Running on Development");
+  })
+}
+
+// -------------------------Deployment----------------------------
+
 const connectedUsers = []; // Assuming this is defined somewhere in your code
 
 socket.on("connection", (socket) => {
-  console.log("User connected");
-
   socket.on("userConnected", async (userId) => {
     socket.join(userId);
     if (!connectedUsers.includes(userId)) connectedUsers.push(userId);
@@ -62,11 +79,41 @@ socket.on("connection", (socket) => {
   socket.on("newMessage", async (newMessage) => {
     // Your existing logic for new messages
     const chat = await Chats.findById(newMessage.chat);
+
+    chat.users.forEach((user) => {
+      if (user.toString() === newMessage.sender.toString()) return;
+
+      socket.in(user.toString()).emit("newMessageReceived", newMessage);
+    });
+  });
+
+  socket.on("typing", async ({ userId, chatId }) => {
+    const chat = await Chats.findById(chatId);
+    const typingUser = await Users.findById(userId);
+
+    chat.users.forEach((user) => {
+      if (user.toString() === userId) return;
+
+      socket
+        .in(user.toString())
+        .emit("typing", { typingUser: typingUser, chatId: chatId });
+    });
+  });
+
+  socket.on("stoppedTyping", async ({ userId, chatId }) => {
+    const chat = await Chats.findById(chatId);
+    const typingUser = await Users.findById(userId);
+
+    chat.users.forEach((user) => {
+      if (user.toString() === userId) return;
+
+      socket
+        .in(user.toString())
+        .emit("stoppedTyping", { typingUser: typingUser, chatId: chatId });
+    });
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
-
     // Remove the disconnected user from the connectedUsers array
     const disconnectedUserId = getUserIdFromSocket(socket);
     const index = connectedUsers.indexOf(disconnectedUserId);
@@ -109,7 +156,6 @@ app.post("/addUser", upload.single("photo"), async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { email, pass } = req.body;
-  console.log("calling");
 
   try {
     const user = await Users.findOne({ email: email });
@@ -155,22 +201,22 @@ app.post("/createChat", async (req, res) => {
   try {
     const chat = await Chats.findOne({
       users: {
+        $size: 2,
         $all: [user1, user2],
       },
     });
 
     if (chat) {
-      // Use Promise.all to wait for both async operations to complete
       const [chatUser, latestMessage] = await Promise.all([
         Users.findById(user2),
-        Messages.findById(chat.latestMessage),
+        chat.latestMessage ? Messages.findById(chat.latestMessage) : null,
       ]);
 
       // Convert chat document to a plain JavaScript object
       const chatObject = chat.toObject();
 
       // Add additional fields to the chat object
-      chatObject.chatUser = chatUser;
+      chatObject.chatUsers = [chatUser];
       chatObject.latestMessage = latestMessage;
 
       return res.status(200).json(chatObject);
@@ -182,22 +228,19 @@ app.post("/createChat", async (req, res) => {
 
     const savedNewChat = await newChat.save();
 
-    const [chatUser, latestMessage] = await Promise.all([
-      Users.findById(user2),
-      chat.latestMessage ? Messages.findById(chat.latestMessage) : null,
-    ]);
+    const chatUser = await Users.findById(user2); // Fix: Remove Promise()
 
     // Convert chat document to a plain JavaScript object
     const chatObject = savedNewChat.toObject();
 
     // Add additional fields to the chat object
-    chatObject.chatUser = chatUser;
-    chatObject.latestMessage = latestMessage;
+    chatObject.chatUsers = [chatUser]; // Fix: Use an array directly
+    chatObject.latestMessage = null;
 
     res.status(200).json(chatObject);
   } catch (error) {
+    console.error(error); // Log the error for debugging
     res.status(500).json({ message: "Internal Server Error" });
-    console.log(error);
   }
 });
 
@@ -272,7 +315,9 @@ app.get("/chats", async (req, res) => {
 
           chatUsers.push(chatUser);
         });
-        const latestMessage = await Messages.findById(chat.latestMessage);
+        const latestMessage = chat.latestMessage
+          ? await Messages.findById(chat.latestMessage)
+          : null;
 
         // Create a new object with the additional chatUser property
         return {
@@ -291,6 +336,37 @@ app.get("/chats", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+app.get("/chat/:chatId", async (req, res) => {
+  const chatId = req.params.chatId; // Use `params` to get chatId from URL
+  const userId = req.headers.authorization;
+
+  try {
+    const chat = await Chats.findById(chatId); // Correct the model name to Chats
+
+    const chatUsers = [];
+
+    // Use a for...of loop to properly handle asynchronous operations
+    for (const user of chat.users) {
+      if (user.toString() === userId) continue;
+
+      const chatUser = await Users.findById(user);
+
+      if (chatUser) chatUsers.push(chatUser);
+    }
+
+    const latestMessage = await Messages.findById(chat.latestMessage);
+
+    // Convert chat document to a plain JavaScript object
+    const chatObj = chat.toObject();
+
+    res.status(200).json({ ...chatObj, chatUsers, latestMessage });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 app.get("/messages/:chatId", async (req, res) => {
   const chatId = req.params.chatId;

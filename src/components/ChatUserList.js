@@ -12,7 +12,6 @@ import {
 
 export default function ChatUserList({
   chat,
-  user,
   isOnline,
   notification,
   isActive,

@@ -38,6 +38,11 @@ var userSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    notifications: [
+      {
+        type: Object,
+      },
+    ],
   },
   {
     timestamps: true,

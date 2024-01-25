@@ -14,6 +14,7 @@ import {
   InputRightElement,
   Text,
   HStack,
+  useToast,
 } from "@chakra-ui/react";
 import {
   AtSignIcon,
@@ -37,6 +38,8 @@ export default function Login({ toggleUser }) {
   const [signUpDisable, setSignUpDisable] = useState(true);
   const [loginDisable, setLoginDisable] = useState(true);
   const serverUrl = process.env.REACT_APP_SERVER_URL;
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -66,6 +69,7 @@ export default function Login({ toggleUser }) {
   const handleShowClick = () => setShowPassword(!showPassword);
 
   const login = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${serverUrl}/login`, {
         method: "POST",
@@ -75,20 +79,30 @@ export default function Login({ toggleUser }) {
         },
       });
 
-      if(!response.ok) console.log(response);
+      if (!response.ok) throw new Error("Error logging in: ", response);
 
       const result = await response.json();
-      console.log(result);
+      toast({
+        title: "Logging in",
+        description: `Hello ${result.user.name}`,
+        status: "success",
+        duration: 9000,
+        position: "top-right",
+        isClosable: true,
+      });
 
-      localStorage.setItem('weChatAppUser', JSON.stringify(result.user));
+      localStorage.setItem("weChatAppUser", JSON.stringify(result.user));
 
       toggleUser(result.user);
     } catch (error) {
-        console.log(error);
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signup = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${serverUrl}/addUser`, {
         method: "POST",
@@ -107,6 +121,8 @@ export default function Login({ toggleUser }) {
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -181,6 +197,7 @@ export default function Login({ toggleUser }) {
                 width="full"
                 onClick={login}
                 isDisabled={loginDisable}
+                isLoading={isLoading}
               >
                 Login
               </Button>
@@ -322,6 +339,7 @@ export default function Login({ toggleUser }) {
                 width="full"
                 onClick={signup}
                 isDisabled={signUpDisable}
+                isLoading={isLoading}
               >
                 Sign up
               </Button>
