@@ -5,8 +5,7 @@ import Login from "./components/Login";
 import io from "socket.io-client";
 
 function App() {
-  const serverUrl = process.env.REACT_APP_SERVER_URL;
-  const socket = io.connect(serverUrl);
+  const socket = io.connect("http://localhost:8000");
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
   );

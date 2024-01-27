@@ -5,7 +5,6 @@ import { FaMicrophone, FaPaperPlane } from "react-icons/fa";
 
 export default function MessageBar({
   user,
-  serverUrl,
   activeChat,
   socket,
   handleChats,
@@ -20,7 +19,7 @@ export default function MessageBar({
 
   const sendMessage = async () => {
     try {
-      const response = await fetch(`${serverUrl}/sendMessage`, {
+      const response = await fetch(`/sendMessage`, {
         method: "POST",
         headers: {
           "content-type": "application/json",

@@ -22,7 +22,7 @@ import {
 import { AddIcon, SmallAddIcon, SmallCloseIcon } from "@chakra-ui/icons";
 import { searchUser } from "./commonFunctions";
 
-export default function CreateGroupChatButton({ user, serverUrl, setChats, setActiveChat, chats }) {
+export default function CreateGroupChatButton({ user, setChats, setActiveChat, chats }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [query, setQuery] = useState("");
   const [groupName, setGroupName] = useState("New We Chat Group");
@@ -35,7 +35,7 @@ export default function CreateGroupChatButton({ user, serverUrl, setChats, setAc
     let groupUsers = [];
     selectedUsers.forEach((element) => groupUsers.push(element._id));
 
-    const response = await fetch(`${serverUrl}/createGroupChat`, {
+    const response = await fetch(`/createGroupChat`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

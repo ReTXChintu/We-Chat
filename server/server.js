@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 const http = require("http");
 const connect = require("./db/connect");
@@ -33,6 +34,7 @@ connect.mongoDB();
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors());
+// app.use(morgan('dev'));
 cloudinary.config({
   cloud_name: cloudName,
   api_key: cloudinaryApiKey,
@@ -50,6 +52,7 @@ if(process.env.NODE_ENV==='production'){
   app.use(express.static(path.join(__dirname1, '/build')))
 
   app.get('*', (req,res) => {
+    console.log("Serving HTML file");
     res.sendFile(path.resolve(__dirname1, "build","index.html"))
   });
 }else{
@@ -298,9 +301,9 @@ app.post("/sendMessage", async (req, res) => {
   }
 });
 
-app.get("/chats", async (req, res) => {
-  const userId = req.headers.authorization;
-
+app.get("/chats/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  console.log(userId);
   try {
     const chats = await Chats.find({ users: { $in: [userId] } });
 

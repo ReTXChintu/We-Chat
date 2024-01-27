@@ -29,7 +29,6 @@ import { searchUser } from "./commonFunctions";
 export default function MyDetails({
   user,
   cloudinaryUrl,
-  serverUrl,
   chats,
   setChats,
   setActiveChat,
@@ -70,7 +69,7 @@ export default function MyDetails({
   }, [query]);
 
   const openChat = async (chatUserId) => {
-    const response = await fetch(`${serverUrl}/createChat`, {
+    const response = await fetch(`/createChat`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

@@ -14,7 +14,6 @@ export default function Feed({ user, socket }) {
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
-  const serverUrl = process.env.REACT_APP_SERVER_URL;
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [notifications, setNotifications] = useState({});
   const messagesContainerRef = useRef(null);
@@ -45,7 +44,7 @@ export default function Feed({ user, socket }) {
       setChats(updatedChats);
     } else {
       try {
-        const response = await fetch(`${serverUrl}/chat/${newMessage.chat}`, {
+        const response = await fetch(`/chat/${newMessage.chat}`, {
           method: "GET",
           headers: {
             "content-type": "application/json",
@@ -180,28 +179,34 @@ export default function Feed({ user, socket }) {
   //get chats
   useEffect(() => {
     const getChats = async () => {
-      const response = await fetch(`${serverUrl}/chats`, {
+      console.log("calling get chats");
+      console.log(user._id)
+      const response = await fetch(`/chats${user._id}`, {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: user._id,
+          
         },
       });
+
+      console.log(response);
 
       if (!response.ok) throw new Error("Error Fetching chats", response);
 
       const result = await response.json();
 
+      console.log(result);
+
       setChats(result);
     };
 
     if (user) getChats();
-  }, [user, serverUrl]);
+  }, [user]);
 
   //get messages
   useEffect(() => {
     const getMessages = async () => {
-      fetch(`${serverUrl}/messages/${activeChat._id}`)
+      fetch(`/messages/${activeChat._id}`)
         .then((response) => response.json())
         .then((data) => {
           setMessages(data);
@@ -211,7 +216,7 @@ export default function Feed({ user, socket }) {
         });
     };
     if (activeChat) getMessages();
-  }, [activeChat, serverUrl]);
+  }, [activeChat]);
 
   return (
     <Center
@@ -232,7 +237,6 @@ export default function Feed({ user, socket }) {
           <MyDetails
             user={user}
             cloudinaryUrl={cloudinaryUrl}
-            serverUrl={serverUrl}
             chats={chats}
             setChats={setChats}
             setActiveChat={setActiveChat}
@@ -271,7 +275,6 @@ export default function Feed({ user, socket }) {
 
           <CreateGroupChatButton
             user={user}
-            serverUrl={serverUrl}
             setChats={setChats}
             setActiveChat={setActiveChat}
             chats={chats}
@@ -363,7 +366,6 @@ export default function Feed({ user, socket }) {
 
             <MessageBar
               user={user}
-              serverUrl={serverUrl}
               activeChat={activeChat}
               socket={socket}
               handleChats={handleChats}

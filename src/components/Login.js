@@ -37,7 +37,6 @@ export default function Login({ toggleUser }) {
   const [pass, setPass] = useState("");
   const [signUpDisable, setSignUpDisable] = useState(true);
   const [loginDisable, setLoginDisable] = useState(true);
-  const serverUrl = process.env.REACT_APP_SERVER_URL;
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
@@ -71,7 +70,7 @@ export default function Login({ toggleUser }) {
   const login = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${serverUrl}/login`, {
+      const response = await fetch(`/login`, {
         method: "POST",
         body: JSON.stringify({ email: loginemail, pass: loginPass }),
         headers: {
@@ -104,7 +103,7 @@ export default function Login({ toggleUser }) {
   const signup = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${serverUrl}/addUser`, {
+      const response = await fetch(`/addUser`, {
         method: "POST",
         body: JSON.stringify({
           name: name,
