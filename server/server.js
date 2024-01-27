@@ -1,5 +1,4 @@
 const express = require("express");
-const morgan = require("morgan");
 const app = express();
 const http = require("http");
 const connect = require("./db/connect");
