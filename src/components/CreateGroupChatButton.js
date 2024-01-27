@@ -174,6 +174,7 @@ export default function CreateGroupChatButton({ user, setChats, setActiveChat, c
               colorScheme="whatsapp"
               onClick={() => {
                 createGroupChat(groupName, [user, ...selectedUsers], user._id);
+                onClose();
               }}
               isDisabled={isDisabled}
             >

@@ -45,7 +45,7 @@ export default function Feed({ user, socket }) {
     } else {
       try {
         const response = await fetch(`/chat/${newMessage.chat}`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "content-type": "application/json",
             Authorization: user._id,
@@ -179,23 +179,16 @@ export default function Feed({ user, socket }) {
   //get chats
   useEffect(() => {
     const getChats = async () => {
-      console.log("calling get chats");
-      console.log(user._id)
-      const response = await fetch(`/chats${user._id}`, {
-        method: "GET",
+      const response = await fetch(`/chats/${user._id}`, {
+        method: "POST",
         headers: {
           "content-type": "application/json",
-          
         },
       });
-
-      console.log(response);
 
       if (!response.ok) throw new Error("Error Fetching chats", response);
 
       const result = await response.json();
-
-      console.log(result);
 
       setChats(result);
     };

@@ -301,9 +301,8 @@ app.post("/sendMessage", async (req, res) => {
   }
 });
 
-app.get("/chats/:userId", async (req, res) => {
+app.post("/chats/:userId", async (req, res) => {
   const userId = req.params.userId;
-  console.log(userId);
   try {
     const chats = await Chats.find({ users: { $in: [userId] } });
 
@@ -340,7 +339,7 @@ app.get("/chats/:userId", async (req, res) => {
   }
 });
 
-app.get("/chat/:chatId", async (req, res) => {
+app.post("/chat/:chatId", async (req, res) => {
   const chatId = req.params.chatId; // Use `params` to get chatId from URL
   const userId = req.headers.authorization;
 
@@ -370,8 +369,7 @@ app.get("/chat/:chatId", async (req, res) => {
   }
 });
 
-
-app.get("/messages/:chatId", async (req, res) => {
+app.post("/messages/:chatId", async (req, res) => {
   const chatId = req.params.chatId;
   try {
     // Search for messages related to the specified chatId
