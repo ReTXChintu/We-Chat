@@ -78,7 +78,10 @@ export default function Login({ toggleUser }) {
         },
       });
 
-      if (!response.ok) throw new Error("Error logging in: ", response);
+      if (!response.ok) {
+        console.log(response);
+        throw new Error("Error logging in: ", response);
+      }
 
       const result = await response.json();
       toast({
