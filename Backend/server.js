@@ -25,7 +25,6 @@ const server = app.listen(PORT, (PORT) => {
 const socket = require("socket.io")(server, {
   cors: {
     origin: frontendUrl,
-    methods: ["GET", "POST"],
   },
   pingTimeout: 60000,
 });
