@@ -70,13 +70,16 @@ export default function Login({ toggleUser }) {
   const login = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/login`, {
-        method: "POST",
-        body: JSON.stringify({ email: loginemail, pass: loginPass }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `https://wechatapprtc-tan.vercel.app/login `,
+        {
+          method: "POST",
+          body: JSON.stringify({ email: loginemail, pass: loginPass }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         console.log(response);
