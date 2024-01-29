@@ -24,7 +24,7 @@ function App() {
     return () => {
       newSocket.disconnect();
     };
-  }, [serverUrl]);
+  }, []);
 
   useEffect(() => {
     if (user && socket) socket.emit("userConnected", user._id);
