@@ -1,9 +1,26 @@
 {
   "name": "we-chat",
   "version": "1.0.0",
+  "private": true,
   "description": "real time chat application",
   "main": "server.js",
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "framer-motion": "^10.18.0",
+    "lottie-react": "^2.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
+    "react-scripts": "5.0.1",
+    "socket.io-client": "^4.7.4",
+    "web-vitals": "^2.1.4",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cloudinary": "^1.41.3",
@@ -17,9 +34,23 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "frontend": "npm start --prefix client",
-    "build": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --prefix client && npm run build --prefix client"
+    "build": "react-scripts build",
+    "eject": "react-scripts eject",
+    "frontend": "react-scripts start",
+    "buildcmd": "npm install --legacy-peer-deps && npm run build"
   },
   "author": "Biswajit Panda",
-  "license": "ISC"
+  "license": "ISC",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
