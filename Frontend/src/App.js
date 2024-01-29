@@ -3,9 +3,10 @@ import Feed from "./components/Feed";
 import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import io from "socket.io-client";
+import { Route, Routes } from "react-router-dom";
 
 function App() {
-  const serverUrl=process.env.REACT_APP_BACKEND_URL;
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
   const socket = io.connect(serverUrl);
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
@@ -20,11 +21,16 @@ function App() {
 
   return (
     <ChakraProvider>
-      {user ? (
-          <Feed user={user} socket={socket}  />
-      ) : (
-        <Login toggleUser={toggleUser} />
-      )}
+      <Routes>
+        <Route path="/" element={user ? (
+            <Feed user={user} socket={socket} />
+          ) : (
+            <Login toggleUser={toggleUser} />
+          )}>
+          
+        </Route>
+      </Routes>
+      {/* Add more routes if needed */}
     </ChakraProvider>
   );
 }
