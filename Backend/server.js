@@ -18,13 +18,13 @@ const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 const frontendUrl = process.env.FRONTEND_URL;
 const PORT = process.env.PORT;
 
-const server = app.listen(8000, () => {
-  console.log("Server connected to port 8000");
+const server = app.listen(PORT, (PORT) => {
+  console.log("Server connected to port: ", PORT);
 });
 
 const socket = require("socket.io")(server, {
   cors: {
-    origin: "https://your-frontend-domain.com",
+    origin: frontendUrl,
     methods: ["GET", "POST"],
   },
   pingTimeout: 60000,
