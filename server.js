@@ -22,10 +22,6 @@ const server = app.listen(8000, () => {
 
 const socket = require("socket.io")(server, {
   pingTimeout: 60000,
-  cors: {
-    origin: process.env.SOCKET_URL || "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
 });
 
 connect.mongoDB();
@@ -46,17 +42,16 @@ const upload = multer({ storage: storage });
 // -------------------------Deployment----------------------------
 
 const __dirname1 = path.resolve();
-if(process.env.NODE_ENV==='production'){
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/build")));
 
-  app.use(express.static(path.join(__dirname1, '/client/build')))
-
-  app.get('*', (req,res) => {
-    res.sendFile(path.resolve(__dirname1, "client", "build","index.html"))
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname1, "build", "index.html"));
   });
-}else{
-  app.get("/", (req,res) => {
+} else {
+  app.get("/", (req, res) => {
     res.send("Running on Development");
-  })
+  });
 }
 
 // -------------------------Deployment----------------------------

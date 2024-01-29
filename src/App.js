@@ -5,7 +5,7 @@ import Login from "./components/Login";
 import io from "socket.io-client";
 
 function App() {
-  const socket = io.connect("http://localhost:8000");
+  const socket = io();
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
   );

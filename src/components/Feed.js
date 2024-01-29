@@ -101,6 +101,7 @@ export default function Feed({ user, socket }) {
   useEffect(() => {
     const handleConnectedUsers = (data) => {
       setConnectedUsers(data);
+      console.log("got connected users: ", data);
     };
 
     socket.on("connectedUsers", handleConnectedUsers);
@@ -199,14 +200,18 @@ export default function Feed({ user, socket }) {
   //get messages
   useEffect(() => {
     const getMessages = async () => {
-      fetch(`/messages/${activeChat._id}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setMessages(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching messages:", error);
-        });
+      const response = await fetch(`/messages/${activeChat._id}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Error Fetching messages", response);
+
+      const result = await response.json();
+
+      setMessages(result);
     };
     if (activeChat) getMessages();
   }, [activeChat]);
