@@ -193,7 +193,6 @@ export default function Feed({ user, socket }) {
     };
 
     if (user) {
-      console.log(serverUrl);
       getChats();
     }
   }, [user]);

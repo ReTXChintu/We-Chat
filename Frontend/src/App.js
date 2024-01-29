@@ -5,9 +5,10 @@ import Login from "./components/Login";
 import io from "socket.io-client";
 import { Route, Routes } from "react-router-dom";
 
+const serverUrl = process.env.REACT_APP_BACKEND_URL;
+const socket = io(serverUrl);
+
 function App() {
-  const serverUrl = process.env.REACT_APP_BACKEND_URL;
-  const [socket, setSocket] = useState(null);
 
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
@@ -15,16 +16,6 @@ function App() {
   const toggleUser = (newUser) => {
     setUser(newUser);
   };
-
-  useEffect(() => {
-    const newSocket = io.connect(serverUrl);
-    setSocket(newSocket);
-    
-    // Clean up function to disconnect socket on component unmount
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     if (user && socket) socket.emit("userConnected", user._id);

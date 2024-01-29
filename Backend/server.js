@@ -23,11 +23,7 @@ const server = app.listen(PORT, (PORT) => {
 });
 
 app.use(cors());
-const socket = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-  }
-});
+const socket = require("socket.io")(server);
 
 connect.mongoDB();
 
