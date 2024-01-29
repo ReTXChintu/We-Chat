@@ -11,6 +11,7 @@ const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const path = require("path");
+const { Server } = require("socket.io");
 require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
@@ -18,12 +19,15 @@ const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 const frontendUrl = process.env.FRONTEND_URL;
 const PORT = process.env.PORT;
 
-const server = app.listen(PORT, (PORT) => {
-  console.log("Server connected to port: ", PORT);
-});
+const server = http.createServer(app);
 
 app.use(cors());
-const socket = require("socket.io")(server);
+const socket = new Server(server, {
+  cors: {
+    origin: frontendUrl,
+    methods: ["GET", "POST"],
+  },
+});
 
 connect.mongoDB();
 
@@ -393,4 +397,8 @@ app.post(`/searchUser/:query`, async (req, res) => {
     console.log(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+});
+
+app.listen(PORT, () => {
+  console.log("Server connected to port: ", PORT);
 });

@@ -6,7 +6,7 @@ import io from "socket.io-client";
 import { Route, Routes } from "react-router-dom";
 
 const serverUrl = process.env.REACT_APP_BACKEND_URL;
-const socket = io(serverUrl);
+const socket = io.connect(serverUrl);
 
 function App() {
 
