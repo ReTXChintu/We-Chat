@@ -5,7 +5,7 @@ import Login from "./components/Login";
 import io from "socket.io-client";
 
 function App() {
-  serverUrl=process.env.REACT_APP_BACKEND_URL;
+  const serverUrl=process.env.REACT_APP_BACKEND_URL;
   const socket = io.connect(serverUrl);
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
@@ -13,8 +13,6 @@ function App() {
   const toggleUser = (newUser) => {
     setUser(newUser);
   };
-
-  const serverUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     if (user) socket.emit("userConnected", user._id);
