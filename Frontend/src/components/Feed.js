@@ -90,11 +90,10 @@ export default function Feed({ user, socket }) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       } else handleNotification(newMessage);
     };
-
-    socket.on("newMessageReceived", handleNewMessageReceived);
+    if (socket) socket.on("newMessageReceived", handleNewMessageReceived);
 
     return () => {
-      socket.off("newMessageReceived", handleNewMessageReceived);
+      if (socket) socket.off("newMessageReceived", handleNewMessageReceived);
     };
   });
 
@@ -104,11 +103,10 @@ export default function Feed({ user, socket }) {
       setConnectedUsers(data);
       console.log("got connected users: ", data);
     };
-
-    socket.on("connectedUsers", handleConnectedUsers);
+    if (socket) socket.on("connectedUsers", handleConnectedUsers);
 
     return () => {
-      socket.off("connectedUsers", handleConnectedUsers);
+      if (socket) socket.off("connectedUsers", handleConnectedUsers);
     };
   });
 
@@ -138,11 +136,10 @@ export default function Feed({ user, socket }) {
         return newTypings;
       });
     };
-
-    socket.on("typing", handleTyping);
+    if (socket) socket.on("typing", handleTyping);
 
     return () => {
-      socket.off("typing", handleTyping);
+      if (socket) socket.off("typing", handleTyping);
     };
   });
 
@@ -172,9 +169,9 @@ export default function Feed({ user, socket }) {
         return newTypings;
       });
     };
-    socket.on("stoppedTyping", handleStoppedTyping);
+    if (socket) socket.on("stoppedTyping", handleStoppedTyping);
     return () => {
-      socket.off("stoppedTyping", handleStoppedTyping);
+      if (socket) socket.off("stoppedTyping", handleStoppedTyping);
     };
   });
 
