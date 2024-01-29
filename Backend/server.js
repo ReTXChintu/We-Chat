@@ -22,9 +22,11 @@ const server = app.listen(PORT, (PORT) => {
   console.log("Server connected to port: ", PORT);
 });
 
+app.use(cors());
 const socket = require("socket.io")(server, {
   cors: {
     origin: frontendUrl,
+    methods: ["GET", "POST"],
   },
   pingTimeout: 60000,
 });
@@ -33,7 +35,6 @@ connect.mongoDB();
 
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cors());
 // app.use(morgan('dev'));
 cloudinary.config({
   cloud_name: cloudName,
