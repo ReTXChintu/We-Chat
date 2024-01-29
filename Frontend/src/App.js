@@ -16,12 +16,12 @@ function App() {
   };
 
   useEffect(() => {
-    if (user) socket.emit("userConnected", user._id);
-  }, [user, socket]);
-
-  useEffect(() => {
     socket = io.connect(serverUrl);
   }, []);
+
+  useEffect(() => {
+    if (user) socket.emit("userConnected", user._id);
+  }, [user, socket]);
 
   return (
     <ChakraProvider>
