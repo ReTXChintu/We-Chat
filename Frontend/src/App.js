@@ -7,7 +7,8 @@ import { Route, Routes } from "react-router-dom";
 
 function App() {
   const serverUrl = process.env.REACT_APP_BACKEND_URL;
-  let socket;
+  const [socket, setSocket] = useState(null);
+
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
   );
@@ -16,11 +17,17 @@ function App() {
   };
 
   useEffect(() => {
-    socket = io.connect(serverUrl);
-  }, []);
+    const newSocket = io.connect(serverUrl);
+    setSocket(newSocket);
+    
+    // Clean up function to disconnect socket on component unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [serverUrl]);
 
   useEffect(() => {
-    if (user) socket.emit("userConnected", user._id);
+    if (user && socket) socket.emit("userConnected", user._id);
   }, [user, socket]);
 
   return (
