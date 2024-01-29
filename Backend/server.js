@@ -15,12 +15,18 @@ require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+const frontendUrl = process.env.FRONTEND_URL;
+const PORT = process.env.PORT;
 
 const server = app.listen(8000, () => {
   console.log("Server connected to port 8000");
 });
 
 const socket = require("socket.io")(server, {
+  cors: {
+    origin: "https://your-frontend-domain.com",
+    methods: ["GET", "POST"],
+  },
   pingTimeout: 60000,
 });
 
@@ -28,7 +34,7 @@ connect.mongoDB();
 
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
-// app.use(cors());
+app.use(cors());
 // app.use(morgan('dev'));
 cloudinary.config({
   cloud_name: cloudName,
@@ -125,7 +131,7 @@ const getUserIdFromSocket = (socket) => {
   return socket.data.userId;
 };
 
-app.post("/addUser", upload.single("photo"), async (req, res) => {
+app.post(`/addUser`, upload.single("photo"), async (req, res) => {
   try {
     const { name, email, phone, pass, photo } = req.body;
     const result = await cloudinary.uploader.upload(photo);
@@ -150,7 +156,7 @@ app.post("/addUser", upload.single("photo"), async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post(`/login`, async (req, res) => {
   const { email, pass } = req.body;
 
   try {
@@ -191,7 +197,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/createChat", async (req, res) => {
+app.post(`/createChat`, async (req, res) => {
   const { user1, user2 } = req.body;
 
   try {
@@ -240,7 +246,7 @@ app.post("/createChat", async (req, res) => {
   }
 });
 
-app.post("/createGroupChat", async (req, res) => {
+app.post(`/createGroupChat`, async (req, res) => {
   const { groupName, users, groupAdmin } = req.body;
   try {
     const newChat = new Chats({
@@ -270,7 +276,7 @@ app.post("/createGroupChat", async (req, res) => {
   }
 });
 
-app.post("/sendMessage", async (req, res) => {
+app.post(`/sendMessage`, async (req, res) => {
   const { sender, chatId, messageText } = req.body;
   try {
     let chat = await Chats.findById(chatId);
@@ -294,7 +300,7 @@ app.post("/sendMessage", async (req, res) => {
   }
 });
 
-app.post("/chats/:userId", async (req, res) => {
+app.post(`/chats/:userId`, async (req, res) => {
   const userId = req.params.userId;
   try {
     const chats = await Chats.find({ users: { $in: [userId] } });
@@ -332,7 +338,7 @@ app.post("/chats/:userId", async (req, res) => {
   }
 });
 
-app.post("/chat/:chatId", async (req, res) => {
+app.post(`/chat/:chatId`, async (req, res) => {
   const chatId = req.params.chatId; // Use `params` to get chatId from URL
   const userId = req.headers.authorization;
 
@@ -362,7 +368,7 @@ app.post("/chat/:chatId", async (req, res) => {
   }
 });
 
-app.post("/messages/:chatId", async (req, res) => {
+app.post(`/messages/:chatId`, async (req, res) => {
   const chatId = req.params.chatId;
   try {
     // Search for messages related to the specified chatId
@@ -375,7 +381,7 @@ app.post("/messages/:chatId", async (req, res) => {
   }
 });
 
-app.post("/searchUser/:query", async (req, res) => {
+app.post(`/searchUser/:query`, async (req, res) => {
   try {
     const query = req.params.query;
 

@@ -37,6 +37,7 @@ export default function MyDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [bottomValue, setBottomValue] = useState("");
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     const element = document.getElementById("searchBar");
@@ -69,7 +70,7 @@ export default function MyDetails({
   }, [query]);
 
   const openChat = async (chatUserId) => {
-    const response = await fetch(`/createChat`, {
+    const response = await fetch(`${serverUrl}/createChat`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

@@ -32,10 +32,11 @@ export default function CreateGroupChatButton({ user, setChats, setActiveChat, c
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
 
   const createGroupChat = async (groupName, selectedUsers, groupAdmin) => {
+     const serverUrl = process.env.REACT_APP_BACKEND_URL;
     let groupUsers = [];
     selectedUsers.forEach((element) => groupUsers.push(element._id));
 
-    const response = await fetch(`/createGroupChat`, {
+    const response = await fetch(`${serverUrl}/createGroupChat`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

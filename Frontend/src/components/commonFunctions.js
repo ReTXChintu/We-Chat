@@ -4,8 +4,9 @@ import { Avatar, HStack } from "@chakra-ui/react";
 import animationData from "../animations/typingAnimation.json";
 
 export async function searchUser(query) {
+   const serverUrl = process.env.REACT_APP_BACKEND_URL;
   try {
-    const response = await fetch(`/searchUser/${query}`, {
+    const response = await fetch(`${serverUrl}/searchUser/${query}`, {
       method: "POST",
       headers: {
         "content-type": "application/json",

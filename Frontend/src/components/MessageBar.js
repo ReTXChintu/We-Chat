@@ -12,6 +12,7 @@ export default function MessageBar({
 }) {
   const [typedMessage, setTypedMessage] = useState("");
   const [typingTimeout, setTypingTimeout] = useState(null);
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     setTypedMessage("");
@@ -19,7 +20,7 @@ export default function MessageBar({
 
   const sendMessage = async () => {
     try {
-      const response = await fetch(`/sendMessage`, {
+      const response = await fetch(`${serverUrl}/sendMessage`, {
         method: "POST",
         headers: {
           "content-type": "application/json",

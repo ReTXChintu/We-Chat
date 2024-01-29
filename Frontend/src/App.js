@@ -5,13 +5,16 @@ import Login from "./components/Login";
 import io from "socket.io-client";
 
 function App() {
-  const socket = io();
+  serverUrl=process.env.REACT_APP_BACKEND_URL;
+  const socket = io.connect(serverUrl);
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("weChatAppUser"))
   );
   const toggleUser = (newUser) => {
     setUser(newUser);
   };
+
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     if (user) socket.emit("userConnected", user._id);
@@ -20,9 +23,9 @@ function App() {
   return (
     <ChakraProvider>
       {user ? (
-          <Feed user={user} socket={socket} />
+          <Feed user={user} socket={socket} serverUrl={serverUrl} />
       ) : (
-        <Login toggleUser={toggleUser} />
+        <Login toggleUser={toggleUser} serverUrl={serverUrl} />
       )}
     </ChakraProvider>
   );

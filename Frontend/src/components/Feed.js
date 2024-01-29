@@ -11,6 +11,7 @@ import MessageBar from "./MessageBar";
 
 export default function Feed({ user, socket }) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
+   const serverUrl = process.env.REACT_APP_BACKEND_URL;
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -44,7 +45,7 @@ export default function Feed({ user, socket }) {
       setChats(updatedChats);
     } else {
       try {
-        const response = await fetch(`/chat/${newMessage.chat}`, {
+        const response = await fetch(`${serverUrl}/chat/${newMessage.chat}`, {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -180,7 +181,7 @@ export default function Feed({ user, socket }) {
   //get chats
   useEffect(() => {
     const getChats = async () => {
-      const response = await fetch(`/chats/${user._id}`, {
+      const response = await fetch(`${serverUrl}/chats/${user._id}`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -200,7 +201,7 @@ export default function Feed({ user, socket }) {
   //get messages
   useEffect(() => {
     const getMessages = async () => {
-      const response = await fetch(`/messages/${activeChat._id}`, {
+      const response = await fetch(`${serverUrl}/messages/${activeChat._id}`, {
         method: "POST",
         headers: {
           "content-type": "application/json",

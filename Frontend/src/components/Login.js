@@ -38,6 +38,7 @@ export default function Login({ toggleUser }) {
   const [signUpDisable, setSignUpDisable] = useState(true);
   const [loginDisable, setLoginDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
   const toast = useToast();
 
   const handleImageChange = (e) => {
@@ -71,7 +72,7 @@ export default function Login({ toggleUser }) {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/login `,
+        `${serverUrl}/login `,
         {
           method: "POST",
           body: JSON.stringify({ email: loginemail, pass: loginPass }),
@@ -109,7 +110,7 @@ export default function Login({ toggleUser }) {
   const signup = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/addUser`, {
+      const response = await fetch(`${serverUrl}/addUser`, {
         method: "POST",
         body: JSON.stringify({
           name: name,
