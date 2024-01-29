@@ -11,7 +11,7 @@ import MessageBar from "./MessageBar";
 
 export default function Feed({ user, socket }) {
   const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
-   const serverUrl = process.env.REACT_APP_BACKEND_URL;
+  const serverUrl = process.env.REACT_APP_BACKEND_URL;
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -195,7 +195,10 @@ export default function Feed({ user, socket }) {
       setChats(result);
     };
 
-    if (user) getChats();
+    if (user) {
+      console.log(serverUrl);
+      getChats();
+    }
   }, [user]);
 
   //get messages

@@ -21,9 +21,9 @@ function App() {
   return (
     <ChakraProvider>
       {user ? (
-          <Feed user={user} socket={socket} serverUrl={serverUrl} />
+          <Feed user={user} socket={socket}  />
       ) : (
-        <Login toggleUser={toggleUser} serverUrl={serverUrl} />
+        <Login toggleUser={toggleUser} />
       )}
     </ChakraProvider>
   );
