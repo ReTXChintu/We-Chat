@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const http = require("http");
+const http = require("https");
 const connect = require("./db/connect");
 const bodyParser = require("body-parser");
 const Users = require("./models/userSchema");
@@ -25,10 +25,8 @@ const server = app.listen(PORT, (PORT) => {
 app.use(cors());
 const socket = require("socket.io")(server, {
   cors: {
-    origin: frontendUrl,
-    methods: ["GET", "POST"],
-  },
-  pingTimeout: 60000,
+    origin: "*",
+  }
 });
 
 connect.mongoDB();
