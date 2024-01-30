@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const http = require("https");
+const http = require("http");
 const connect = require("./db/connect");
 const bodyParser = require("body-parser");
 const Users = require("./models/userSchema");
@@ -45,9 +45,8 @@ const upload = multer({ storage: storage });
 
 // -------------------------Deployment----------------------------
 
-const __dirname1 = path.resolve();
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/public")));
+  app.use(express.static(path.join(__dirname, "/public")));
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "public", "404.html"));
