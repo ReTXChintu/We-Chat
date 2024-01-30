@@ -47,11 +47,12 @@ const upload = multer({ storage: storage });
 
 const __dirname1 = path.resolve();
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/backend")));
+  app.use(express.static(path.join(__dirname1, "/public")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname1, "backend", "./index.html"));
+    res.sendFile(path.resolve(__dirname, "public", "404.html"));
   });
+
 } else {
   app.get("/", (req, res) => {
     res.send("Running on Development");
