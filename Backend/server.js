@@ -16,18 +16,13 @@ require("dotenv").config();
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
-const frontendUrl = process.env.FRONTEND_URL;
+// const frontendUrl = process.env.FRONTEND_URL;
 const PORT = process.env.PORT;
 
 const server = http.createServer(app);
 
 app.use(cors());
-const socket = new Server(server, {
-  cors: {
-    origin: frontendUrl,
-    methods: ["GET", "POST"],
-  },
-});
+const socket = new Server(server);
 
 connect.mongoDB();
 
@@ -68,6 +63,8 @@ socket.on("connection", (socket) => {
     if (!connectedUsers.includes(userId)) connectedUsers.push(userId);
 
     socket.broadcast.emit("connectedUsers", connectedUsers);
+
+    console.log(connectedUsers);
 
     socket.emit("connectedUsers", connectedUsers);
   });
